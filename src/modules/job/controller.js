@@ -72,6 +72,19 @@ class JobController {
       return res.status(500).json({ error: "Internal server error" });
     }
   }
+
+  static async getFeatured(req, res) {
+    try {
+      const { jobs, total, page, limit } = await JobModel.getAll({
+        ...req.query,
+        isFeatured: true,
+      });
+      return res.json({ jobs, total, page, limit });
+    } catch (error) {
+      console.error("Get featured jobs error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  }
 }
 
 module.exports = JobController;

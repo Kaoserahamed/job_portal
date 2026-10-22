@@ -184,6 +184,40 @@ describe("Jobs API", () => {
     expect(res.status).toBe(200);
     expect(res.body.jobs).toHaveLength(1);
   });
+
+  it("should create a featured job (employer)", async () => {
+    query.mockResolvedValueOnce({
+      rows: [{ id: 3, employer_id: 2, title: "Featured Job", is_featured: true, status: "active", created_at: new Date() }],
+    });
+
+    const res = await request(app)
+      .post("/api/v1/jobs")
+      .set("Authorization", `Bearer ${employerToken}`)
+      .send({
+        title: "Featured Job",
+        description: "We are hiring.",
+        location: "New York, NY",
+        salaryMin: 100000,
+        salaryMax: 150000,
+        employmentType: "full-time",
+        isFeatured: true,
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.job.is_featured).toBe(true);
+  });
+
+  it("should list featured jobs", async () => {
+    query.mockResolvedValueOnce({ rows: [{ count: "1" }] });
+    query.mockResolvedValueOnce({
+      rows: [{ id: 3, title: "Featured Job", employer_id: 2, is_featured: true, created_at: new Date() }],
+    });
+
+    const res = await request(app).get("/api/v1/jobs/featured");
+    expect(res.status).toBe(200);
+    expect(res.body.jobs).toHaveLength(1);
+    expect(res.body.jobs[0].is_featured).toBe(true);
+  });
 });
 
 describe("Applications API", () => {
