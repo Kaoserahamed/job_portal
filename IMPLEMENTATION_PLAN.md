@@ -1,9 +1,11 @@
 # Implementation Plan: job_portal
 
 ## Overview
+
 Expand into a comprehensive job portal with AI resume matching, video interviews, skills assessment, salary insights, employer branding, and applicant tracking system.
 
 ## Git Workflow Standard
+
 - Branch: `feature/<ticket>-<description>` from `development`
 - Implement code + unit tests + integration tests + documentation
 - Push branch → Open Pull Request targeting `development` → Code review → Merge → Delete branch
