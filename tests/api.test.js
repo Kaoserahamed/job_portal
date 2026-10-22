@@ -288,6 +288,48 @@ describe("Profiles API", () => {
   });
 });
 
+describe("Employer Profiles API", () => {
+  const employerToken = signAccessToken(employerRow);
+  const candidateToken = signAccessToken(candidateRow);
+
+  function signAccessToken(user) {
+    return jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      require("../src/config").jwt.secret,
+      { expiresIn: "15m" },
+    );
+  }
+
+  it("should create employer profile", async () => {
+    query.mockResolvedValueOnce({ rows: [] }); // getByUserId: none
+    query.mockResolvedValueOnce({
+      rows: [{ id: 1, user_id: 2, company_name: "Acme Corp", created_at: new Date() }],
+    });
+
+    const res = await request(app)
+      .post("/api/v1/employers")
+      .set("Authorization", `Bearer ${employerToken}`)
+      .send({
+        companyName: "Acme Corp",
+        description: "A great company.",
+        branding: { color: "blue" },
+        careersPageUrl: "https://acme.com/careers",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.employer).toBeDefined();
+  });
+
+  it("should forbid candidate from creating employer profile", async () => {
+    const res = await request(app)
+      .post("/api/v1/employers")
+      .set("Authorization", `Bearer ${candidateToken}`)
+      .send({ companyName: "Acme Corp" });
+
+    expect(res.status).toBe(403);
+  });
+});
+
 describe("Health", () => {
   it("should return ok", async () => {
     const res = await request(app).get("/health");
