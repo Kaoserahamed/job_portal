@@ -10,7 +10,7 @@ coverage/
 build/
 dist/
 *.log
-.DS_Thumbs/
+.DS_Store
 Thumbs.db/
 .vscode/
 .idea/

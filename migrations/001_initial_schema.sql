@@ -1,4 +1,4 @@
--- Users table
+-- Users table (authentication + roles)
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -10,6 +10,33 @@ CREATE TABLE IF NOT EXISTS users (
   location VARCHAR(255),
   is_active BOOLEAN DEFAULT true,
   email_verified BOOLEAN DEFAULT false,
+  mfa_secret VARCHAR(255),
+  mfa_enabled BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Employers table (company profiles)
+CREATE TABLE IF NOT EXISTS employers (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+  company_name VARCHAR(255) NOT NULL,
+  description TEXT,
+  branding JSONB DEFAULT '{}',
+  careers_page_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Candidates table (candidate profiles)
+CREATE TABLE IF NOT EXISTS candidates (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+  resume_url TEXT,
+  work_history JSONB DEFAULT '[]',
+  skills JSONB DEFAULT '[]',
+  education JSONB DEFAULT '[]',
+  preferences JSONB DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -34,8 +61,8 @@ CREATE TABLE IF NOT EXISTS jobs (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Applications table
-CREATE TABLE IF NOT EXISTS applications (
+-- Job applications table
+CREATE TABLE IF NOT EXISTS job_applications (
   id SERIAL PRIMARY KEY,
   job_id INTEGER REFERENCES jobs(id) ON DELETE CASCADE,
   applicant_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -47,18 +74,13 @@ CREATE TABLE IF NOT EXISTS applications (
   UNIQUE(job_id, applicant_id)
 );
 
--- Profiles table
-CREATE TABLE IF NOT EXISTS profiles (
+-- Assessments table
+CREATE TABLE IF NOT EXISTS assessments (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
-  headline VARCHAR(255),
-  bio TEXT,
-  skills JSONB DEFAULT '[]',
-  experience JSONB DEFAULT '[]',
-  education JSONB DEFAULT '[]',
-  portfolio_url TEXT,
-  linkedin_url TEXT,
-  github_url TEXT,
+  application_id INTEGER REFERENCES job_applications(id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL,
+  score INTEGER,
+  feedback TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -66,13 +88,15 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_employers_user_id ON employers(user_id);
+CREATE INDEX IF NOT EXISTS idx_candidates_user_id ON candidates(user_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_employer_id ON jobs(employer_id);
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 CREATE INDEX IF NOT EXISTS idx_jobs_category ON jobs(category);
 CREATE INDEX IF NOT EXISTS idx_jobs_location ON jobs(location);
 CREATE INDEX IF NOT EXISTS idx_jobs_employment_type ON jobs(employment_type);
 CREATE INDEX IF NOT EXISTS idx_jobs_is_remote ON jobs(is_remote);
-CREATE INDEX IF NOT EXISTS idx_applications_job_id ON applications(job_id);
-CREATE INDEX IF NOT EXISTS idx_applications_applicant_id ON applications(applicant_id);
-CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
-CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_applications_job_id ON job_applications(job_id);
+CREATE INDEX IF NOT EXISTS idx_applications_applicant_id ON job_applications(applicant_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status ON job_applications(status);
+CREATE INDEX IF NOT EXISTS idx_assessments_application_id ON assessments(application_id);
