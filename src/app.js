@@ -10,6 +10,7 @@ const applicationRoutes = require("./modules/application/routes");
 const candidateRoutes = require("./modules/candidate/routes");
 const employerRoutes = require("./modules/employer/routes");
 const assessmentRoutes = require("./modules/assessment/routes");
+const resumeRoutes = require("./modules/resume/routes");
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/v1/applications", applicationRoutes);
 app.use("/api/v1/candidates", candidateRoutes);
 app.use("/api/v1/employers", employerRoutes);
 app.use("/api/v1/assessments", assessmentRoutes);
+app.use("/api/v1/resumes", resumeRoutes);
 
 // 404 handler
 app.use((req, res) => {
