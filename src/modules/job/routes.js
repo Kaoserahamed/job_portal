@@ -23,6 +23,7 @@ router.get(
       .optional()
       .isIn(["full-time", "part-time", "contract", "freelance", "internship"]),
     query("isRemote").optional().isBoolean(),
+    query("isFeatured").optional().isBoolean(),
     query("search").optional().trim(),
   ],
   handleValidationErrors,
@@ -30,6 +31,7 @@ router.get(
   JobController.getAll,
 );
 
+router.get("/jobs/featured", optionalAuth, JobController.getFeatured);
 router.get("/jobs/:id", JobController.getById);
 
 router.post(
@@ -53,6 +55,7 @@ router.post(
     body("experienceLevel").optional().trim(),
     body("category").optional().trim(),
     body("isRemote").optional().isBoolean(),
+    body("isFeatured").optional().isBoolean(),
     body("applicationDeadline").optional().isISO8601(),
   ],
   handleValidationErrors,

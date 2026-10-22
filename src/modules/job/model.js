@@ -8,6 +8,7 @@ class JobModel {
     location,
     employmentType,
     isRemote,
+    isFeatured,
     search,
   } = {}) {
     const values = [];
@@ -35,6 +36,11 @@ class JobModel {
       values.push(isRemote === "true");
       paramIndex++;
     }
+    if (isFeatured !== undefined) {
+      conditions.push(`is_featured = $${paramIndex}`);
+      values.push(isFeatured === "true");
+      paramIndex++;
+    }
     if (search) {
       conditions.push(
         `(title ILIKE $${paramIndex} OR description ILIKE $${paramIndex + 1})`,
@@ -54,7 +60,7 @@ class JobModel {
     const result = await query(
       `SELECT j.id, j.employer_id, j.title, j.description, j.requirements, j.location,
               j.salary_min, j.salary_max, j.employment_type, j.experience_level, j.category,
-              j.is_remote, j.application_deadline, j.status, j.created_at, j.updated_at,
+              j.is_remote, j.is_featured, j.application_deadline, j.status, j.created_at, j.updated_at,
               u.email AS employer_email, u.first_name AS employer_first_name, u.last_name AS employer_last_name
        FROM jobs j
        JOIN users u ON u.id = j.employer_id
@@ -76,7 +82,7 @@ class JobModel {
     const result = await query(
       `SELECT j.id, j.employer_id, j.title, j.description, j.requirements, j.location,
               j.salary_min, j.salary_max, j.employment_type, j.experience_level, j.category,
-              j.is_remote, j.application_deadline, j.status, j.created_at, j.updated_at,
+              j.is_remote, j.is_featured, j.application_deadline, j.status, j.created_at, j.updated_at,
               u.email AS employer_email, u.first_name AS employer_first_name, u.last_name AS employer_last_name
        FROM jobs j
        JOIN users u ON u.id = j.employer_id
@@ -98,12 +104,13 @@ class JobModel {
     experienceLevel,
     category,
     isRemote,
+    isFeatured,
     applicationDeadline,
   }) {
     const result = await query(
-      `INSERT INTO jobs (employer_id, title, description, requirements, location, salary_min, salary_max, employment_type, experience_level, category, is_remote, application_deadline)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-       RETURNING id, employer_id, title, description, requirements, location, salary_min, salary_max, employment_type, experience_level, category, is_remote, application_deadline, status, created_at`,
+      `INSERT INTO jobs (employer_id, title, description, requirements, location, salary_min, salary_max, employment_type, experience_level, category, is_remote, is_featured, application_deadline)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING id, employer_id, title, description, requirements, location, salary_min, salary_max, employment_type, experience_level, category, is_remote, is_featured, application_deadline, status, created_at`,
       [
         employerId,
         title,
@@ -116,6 +123,7 @@ class JobModel {
         experienceLevel,
         category,
         isRemote,
+        isFeatured,
         applicationDeadline,
       ],
     );
@@ -138,6 +146,7 @@ class JobModel {
       "experience_level",
       "category",
       "is_remote",
+      "is_featured",
       "application_deadline",
       "status",
     ];
@@ -169,7 +178,7 @@ class JobModel {
 
   static async getByEmployer(employerId) {
     const result = await query(
-      `SELECT id, employer_id, title, description, requirements, location, salary_min, salary_max, employment_type, experience_level, category, is_remote, application_deadline, status, created_at
+      `SELECT id, employer_id, title, description, requirements, location, salary_min, salary_max, employment_type, experience_level, category, is_remote, is_featured, application_deadline, status, created_at
        FROM jobs WHERE employer_id = $1 ORDER BY created_at DESC`,
       [employerId],
     );
